@@ -1,0 +1,11 @@
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30
+pydantic>=2.7,<3.0
+pydantic-settings>=2.3
+httpx>=0.27
+# 真實數據源（TA_USE_LIVE_DATA=true 時才會被延遲載入）
+yfinance>=0.2.40
+pandas>=2.2
+# 開發 / 測試
+pytest>=8.0
+pytest-asyncio>=0.23

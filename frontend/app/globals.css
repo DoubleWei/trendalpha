@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 240 10% 6%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 6%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 6%;
+    --primary: 240 6% 10%;
+    --primary-foreground: 0 0% 98%;
+    --muted: 240 5% 95%;
+    --muted-foreground: 240 4% 42%;
+    --accent: 240 5% 94%;
+    --accent-foreground: 240 6% 10%;
+    --border: 240 6% 89%;
+    --input: 240 6% 89%;
+    --ring: 240 5% 65%;
+    --radius: 0.75rem;
+
+    --bull: 152 82% 36%;
+    --bear: 350 82% 52%;
+    --neutral: 240 4% 55%;
+  }
+
+  .dark {
+    --background: 240 10% 3.5%;  /* ≈ zinc-950 */
+    --foreground: 0 0% 96%;
+    --card: 240 8% 5.5%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 8% 6%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 0% 96%;
+    --primary-foreground: 240 6% 10%;
+    --muted: 240 5% 11%;
+    --muted-foreground: 240 5% 58%;
+    --accent: 240 5% 13%;
+    --accent-foreground: 0 0% 96%;
+    --border: 240 5% 14%;
+    --input: 240 5% 16%;
+    --ring: 240 5% 34%;
+
+    --bull: 150 100% 54%;  /* 螢光綠 */
+    --bear: 349 100% 62%;  /* 霓虹紅 */
+    --neutral: 240 5% 60%;
+  }
+
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::selection { background: hsl(var(--bull) / .25); }
+}
+
+@layer utilities {
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* 背景點陣格線 + 頂部光暈（Linear 風格） */
+  .bg-grid {
+    background-image:
+      radial-gradient(circle at 1px 1px, hsl(var(--foreground) / .07) 1px, transparent 0);
+    background-size: 24px 24px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+  .bg-aurora {
+    background:
+      radial-gradient(600px 300px at 20% -10%, hsl(var(--bull) / .10), transparent 70%),
+      radial-gradient(600px 300px at 80% -10%, hsl(258 90% 66% / .10), transparent 70%);
+  }
+
+  /* 滑鼠追蹤聚光燈：搭配 SpotlightCard 設定的 --x / --y */
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s ease;
+    background: radial-gradient(420px circle at var(--x, 50%) var(--y, 50%), hsl(var(--glow, var(--foreground)) / .09), transparent 45%);
+  }
+  .spotlight::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s ease;
+    padding: 1px;
+    background: radial-gradient(260px circle at var(--x, 50%) var(--y, 50%), hsl(var(--glow, var(--foreground)) / .55), transparent 60%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  .spotlight:hover::before, .spotlight:hover::after { opacity: 1; }
+
+  .skeleton {
+    background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--accent)) 50%, hsl(var(--muted)) 100%);
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-md;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
