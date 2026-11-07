@@ -36,13 +36,18 @@ def _parse_dt(value) -> datetime | None:
     return None
 
 
-async def finmind_news(fm: FinMindProvider, symbol: str, days: int = 3) -> list[RawArticle]:
-    rows = await fm.dataset_range(
-        "TaiwanStockNews",
-        data_id=symbol,
-        start=date.today() - timedelta(days=days),
-        end=date.today(),
-    )
+async def finmind_news(fm: FinMindProvider, symbol: str, days: int = 2) -> list[RawArticle]:
+    """FinMind TaiwanStockNews 一次只接受單日查詢（start_date），因此逐日抓取。"""
+    rows: list[dict] = []
+    errors: list[str] = []
+    for offset in range(days):
+        day = (date.today() - timedelta(days=offset)).isoformat()
+        try:
+            rows += await fm.query({"dataset": "TaiwanStockNews", "data_id": symbol, "start_date": day})
+        except Exception as exc:  # noqa: BLE001
+            errors.append(str(exc))
+    if not rows and errors:
+        raise RuntimeError(errors[0])
     out: list[RawArticle] = []
     for r in rows:
         dt = _parse_dt(r.get("date"))

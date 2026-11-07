@@ -24,13 +24,16 @@ ZH_NEGATIVE = [
 EN_POSITIVE = [
     "surge", "surges", "soar", "soars", "jump", "jumps", "beat", "beats", "record", "upgrade", "upgraded",
     "strong", "growth", "rally", "rallies", "gain", "gains", "raise", "raises", "bullish", "outperform",
-    "boost", "boosts", "expands", "expansion", "tops",
+    "boost", "boosts", "expands", "expansion", "tops", "climb", "climbs", "rise", "rises", "rebound",
+    "rebounds", "upbeat", "optimism", "wins", "best", "accelerates", "breakthrough", "all-time",
 ]
 EN_NEGATIVE = [
     "plunge", "plunges", "slump", "slumps", "miss", "misses", "downgrade", "downgraded", "weak", "cut",
     "cuts", "fall", "falls", "drop", "drops", "tariff", "tariffs", "ban", "probe", "lawsuit", "bearish",
     "layoffs", "decline", "declines", "selloff", "sell-off", "concern", "concerns", "slowdown", "warns",
-    "restrictions", "sanctions", "tumble", "tumbles", "sinks",
+    "restrictions", "sanctions", "tumble", "tumbles", "sinks", "sank", "worst", "crash", "slide", "slides",
+    "slip", "slips", "plummets", "losses", "rout", "fears", "worries", "downturn", "headwinds", "delay",
+    "delays", "shortage",
 ]
 NEGATIONS = ("未", "不", "沒", "無")
 

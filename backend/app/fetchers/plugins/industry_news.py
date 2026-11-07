@@ -22,6 +22,7 @@ from app.schemas.signal import EventSignal, FactorCategory
 logger = logging.getLogger(__name__)
 
 LOOKBACK_DAYS = 4
+FINMIND_DAYS = 2  # 逐日查詢，控制 FinMind 免金鑰額度（約 300 次/小時）
 HALF_LIFE_HOURS = 24.0
 MAX_ARTICLES = 80
 CONCURRENCY = 4
@@ -55,10 +56,21 @@ class IndustryNewsFetcher(BaseEventFetcher):
 
         tasks = []
         for ind in INDUSTRIES:
-            tasks += [guarded(finmind_news(fm, s, LOOKBACK_DAYS), f"finmind:{s}") for s in ind.tw_symbols]
+            tasks += [guarded(finmind_news(fm, s, FINMIND_DAYS), f"finmind:{s}") for s in ind.tw_symbols]
             tasks += [guarded(yfinance_news(s), f"yfinance:{s}") for s in ind.us_symbols]
         results = await asyncio.gather(*tasks)
-        return [a for batch in results for a in batch]
+        raws = [a for batch in results for a in batch]
+        kept = [a for a in raws if self._relevant(a)]
+        logger.info("[industry_news] relevance filter kept %d / %d", len(kept), len(raws))
+        return kept
+
+    def _relevant(self, a: RawArticle) -> bool:
+        """FinMind 新聞本來就是個股新聞；yfinance 會混入大盤綜合新聞，需標題提及公司或產業關鍵字。"""
+        if a.provider != "yfinance":
+            return True
+        ind = INDUSTRY_BY_KEY[self._symbol_industry()[a.symbol]]
+        title = a.title.lower()
+        return any(alias in title for alias in ind.aliases)
 
     def _collect_mock(self) -> list[RawArticle]:
         rng = random.Random(int(datetime.now().timestamp() // 600))

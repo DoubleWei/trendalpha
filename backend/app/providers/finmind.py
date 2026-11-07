@@ -28,18 +28,14 @@ class FinMindProvider:
             raise RuntimeError(f"FinMind error: {payload.get('msg')}")
         return payload.get("data", [])
 
-    async def dataset_range(self, dataset: str, *, data_id: str, start: date, end: date) -> list[dict[str, Any]]:
-        params: dict[str, Any] = {
-            "dataset": dataset,
-            "data_id": data_id,
-            "start_date": start.isoformat(),
-            "end_date": end.isoformat(),
-        }
+    async def query(self, params: dict[str, Any]) -> list[dict[str, Any]]:
+        """通用查詢；錯誤時把 FinMind 回傳的訊息帶進例外，方便從 CI log 判斷原因。"""
         headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.get(FINMIND_URL, params=params, headers=headers)
-            resp.raise_for_status()
-            payload = resp.json()
+        if resp.status_code != 200:
+            raise RuntimeError(f"FinMind {params.get('dataset')} HTTP {resp.status_code}: {resp.text[:200]}")
+        payload = resp.json()
         if payload.get("status") != 200:
             raise RuntimeError(f"FinMind error: {payload.get('msg')}")
         return payload.get("data", [])
