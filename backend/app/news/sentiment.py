@@ -26,6 +26,7 @@ EN_POSITIVE = [
     "strong", "growth", "rally", "rallies", "gain", "gains", "raise", "raises", "bullish", "outperform",
     "boost", "boosts", "expands", "expansion", "tops", "climb", "climbs", "rise", "rises", "rebound",
     "rebounds", "upbeat", "optimism", "wins", "best", "accelerates", "breakthrough", "all-time",
+    "jumped", "surged", "soared", "rallied", "climbed", "rose", "popped", "bounce", "bounces", "bounced", "beating",
 ]
 EN_NEGATIVE = [
     "plunge", "plunges", "slump", "slumps", "miss", "misses", "downgrade", "downgraded", "weak", "cut",
@@ -33,7 +34,7 @@ EN_NEGATIVE = [
     "layoffs", "decline", "declines", "selloff", "sell-off", "concern", "concerns", "slowdown", "warns",
     "restrictions", "sanctions", "tumble", "tumbles", "sinks", "sank", "worst", "crash", "slide", "slides",
     "slip", "slips", "plummets", "losses", "rout", "fears", "worries", "downturn", "headwinds", "delay",
-    "delays", "shortage",
+    "delays", "shortage", "fell", "dropped", "plunged", "tumbled", "slumped", "slid", "missed", "cutting",
 ]
 NEGATIONS = ("未", "不", "沒", "無")
 

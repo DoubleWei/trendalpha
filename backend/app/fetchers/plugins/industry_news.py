@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 LOOKBACK_DAYS = 4
 FINMIND_DAYS = 2  # 逐日查詢，控制 FinMind 免金鑰額度（約 300 次/小時）
 HALF_LIFE_HOURS = 24.0
-MAX_ARTICLES = 80
+MAX_ARTICLES = 150
 CONCURRENCY = 4
 
 
