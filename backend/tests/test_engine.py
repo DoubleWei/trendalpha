@@ -59,7 +59,11 @@ def test_api_endpoints_with_mock_plugins():
         g = client.get("/api/v1/market/global-score").json()
         assert -100 <= g["score"] <= 100 and g["summary"]
         f = client.get("/api/v1/market/factors").json()
-        assert {x["category"] for x in f["factors"]} == {"macro", "us_tech", "commodity", "tw_flow"}
+        assert {x["category"] for x in f["factors"]} == {"macro", "us_tech", "commodity", "tw_flow", "news"}
         assert set(client.get("/api/v1/market/fetchers").json()["enabled"]) == {
-            "macro", "global_market", "commodity", "taiwan_flow"
+            "macro", "global_market", "commodity", "taiwan_flow", "industry_news"
         }
+        news = client.get("/api/v1/market/news").json()
+        assert news["articles"] and len(news["industries"]) == 6
+        assert len(client.get("/api/v1/market/history").json()["points"]) >= 1
+        assert client.get("/api/v1/market/quotes").json()["quotes"]

@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     finmind_token: str | None = None
 
     # 外掛控制：只要把名稱加進清單即可啟用（名稱 = 外掛的 `name` 類別屬性）
-    enabled_fetchers: list[str] = ["macro", "global_market", "commodity", "taiwan_flow"]
+    enabled_fetchers: list[str] = ["macro", "global_market", "commodity", "taiwan_flow", "industry_news"]
 
     # 維度層級的權重乘數（可在不改程式碼的情況下調整策略偏好）
     category_multipliers: dict[str, float] = {
@@ -24,11 +24,16 @@ class Settings(BaseSettings):
         "us_tech": 1.0,
         "commodity": 1.0,
         "tw_flow": 1.0,
+        "news": 1.0,
     }
 
     fetcher_timeout_sec: float = 8.0
     cache_ttl_sec: int = 60
     extreme_threshold: float = 0.8
+
+    # 歷史走勢：匯出時從這個網址讀回上一版 history.json 再接續（GitHub Pages 上的舊資料）
+    history_url: str | None = None
+    history_max_points: int = 672  # 30 分鐘一點 ≈ 14 天
 
     cors_origins: list[str] = ["http://localhost:3000"]
 

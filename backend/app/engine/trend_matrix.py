@@ -2,13 +2,14 @@
 import asyncio
 import logging
 import time
-from collections import defaultdict
+from collections import defaultdict, deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from app.core.scoring import clamp
 from app.engine.summarizer import RuleBasedSummarizer, Summarizer
 from app.fetchers.base import BaseEventFetcher
+from app.schemas.extras import HistoryPoint
 from app.schemas.market import FactorItem, FactorsResponse, GlobalScoreResponse, Regime
 from app.schemas.signal import EventSignal, FactorCategory
 
@@ -19,6 +20,7 @@ CATEGORY_LABELS: dict[FactorCategory, str] = {
     FactorCategory.US_TECH: "美國科技股",
     FactorCategory.COMMODITY: "原物料市場",
     FactorCategory.TW_FLOW: "台灣內部籌碼",
+    FactorCategory.NEWS: "產業新聞",
 }
 
 # (下限分數, 狀態, 中文標籤) —— 由高到低比對
@@ -37,6 +39,7 @@ REGIME_TABLE: list[tuple[float, Regime, str]] = [
 class MarketSnapshot:
     global_score: GlobalScoreResponse
     factors: FactorsResponse
+    extras: dict  # 各外掛的附帶資料，例如 {"news": NewsDigest}
 
 
 class TrendMatrixEngine:
@@ -50,8 +53,10 @@ class TrendMatrixEngine:
         category_multipliers: dict[str, float] | None = None,
         summarizer: Summarizer | None = None,
         data_mode: str = "live",
+        history_max_points: int = 672,
     ) -> None:
         self.data_mode = data_mode
+        self.history: deque[HistoryPoint] = deque(maxlen=history_max_points)
         self.fetchers = fetchers
         self.timeout_sec = timeout_sec
         self.cache_ttl_sec = cache_ttl_sec
@@ -65,18 +70,20 @@ class TrendMatrixEngine:
     async def _run_one(self, fetcher: BaseEventFetcher) -> list[EventSignal]:
         return await asyncio.wait_for(fetcher.fetch_signals(), timeout=self.timeout_sec)
 
-    async def collect(self) -> tuple[list[EventSignal], list[str]]:
+    async def collect(self) -> tuple[list[EventSignal], list[str], dict]:
         """並行執行所有外掛；單一外掛失敗或逾時只會被記錄，不影響其他外掛。"""
         results = await asyncio.gather(*(self._run_one(f) for f in self.fetchers), return_exceptions=True)
         signals: list[EventSignal] = []
         failed: list[str] = []
+        extras: dict = {}
         for fetcher, result in zip(self.fetchers, results):
             if isinstance(result, BaseException):
                 logger.error("fetcher '%s' failed: %r", fetcher.name, result)
                 failed.append(fetcher.name)
                 continue
             signals.extend(s if s.category else s.model_copy(update={"category": fetcher.category}) for s in result)
-        return signals, failed
+            extras.update(fetcher.artifacts())
+        return signals, failed, extras
 
     # ------------------------------------------------------------------ 聚合
     def effective_weight(self, s: EventSignal) -> float:
@@ -131,10 +138,12 @@ class TrendMatrixEngine:
 
     # ------------------------------------------------------------------ 對外
     async def compute(self) -> MarketSnapshot:
-        signals, failed = await self.collect()
+        signals, failed, extras = await self.collect()
         now = datetime.now(timezone.utc)
         score, confidence = self.aggregate(signals)
         regime, label = self.classify(score)
+        if signals:
+            self.history.append(HistoryPoint(t=now, score=score, regime_label=label))
         summary = await self.summarizer.summarize(score, label, confidence, signals)
         return MarketSnapshot(
             global_score=GlobalScoreResponse(
@@ -149,6 +158,7 @@ class TrendMatrixEngine:
                 generated_at=now,
             ),
             factors=self.build_factors(signals, now),
+            extras=extras,
         )
 
     async def snapshot(self, *, force: bool = False) -> MarketSnapshot:

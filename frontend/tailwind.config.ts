@@ -42,6 +42,7 @@ const config: Config = {
           to: { opacity: "1", transform: "translateY(0)" },
         },
         shimmer: { from: { backgroundPosition: "200% 0" }, to: { backgroundPosition: "-200% 0" } },
+        marquee: { from: { transform: "translateX(0)" }, to: { transform: "translateX(-50%)" } },
         "ping-slow": { "75%,100%": { transform: "scale(2.2)", opacity: "0" } },
       },
       animation: {
@@ -49,6 +50,7 @@ const config: Config = {
         "alert-bear": "alert-bear 1.6s ease-in-out infinite",
         "fade-up": "fade-up .6s cubic-bezier(.22,1,.36,1) both",
         shimmer: "shimmer 2.2s linear infinite",
+        marquee: "marquee 60s linear infinite",
         "ping-slow": "ping-slow 2s cubic-bezier(0,0,.2,1) infinite",
       },
     },

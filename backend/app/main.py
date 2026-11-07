@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.deps import build_engine
+from app.fetchers.base import FetcherContext
+from app.services.quotes import QuotesService
 from app.api.v1.router import api_router
 from app.core.config import Settings, get_settings
 
@@ -16,7 +18,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        app.state.engine = build_engine(settings)
+        ctx = FetcherContext(settings=settings)  # 引擎與行情服務共用同一組 provider（含快取）
+        app.state.engine = build_engine(settings, ctx)
+        app.state.quotes = QuotesService(ctx)
         yield
 
     app = FastAPI(title=settings.app_name, version="1.0.0", lifespan=lifespan)

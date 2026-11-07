@@ -45,6 +45,10 @@ class BaseEventFetcher(ABC):
     async def fetch_signals(self) -> list[EventSignal]:
         """抓取數據並轉換成 EventSignal 清單。"""
 
+    def artifacts(self) -> dict:
+        """（可選）本次抓取附帶的額外資料，例如新聞清單。key 會成為 snapshot.extras 的鍵。"""
+        return {}
+
     def signal(
         self,
         source_name: str,

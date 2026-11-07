@@ -27,3 +27,19 @@ class FinMindProvider:
         if payload.get("status") != 200:
             raise RuntimeError(f"FinMind error: {payload.get('msg')}")
         return payload.get("data", [])
+
+    async def dataset_range(self, dataset: str, *, data_id: str, start: date, end: date) -> list[dict[str, Any]]:
+        params: dict[str, Any] = {
+            "dataset": dataset,
+            "data_id": data_id,
+            "start_date": start.isoformat(),
+            "end_date": end.isoformat(),
+        }
+        headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            resp = await client.get(FINMIND_URL, params=params, headers=headers)
+            resp.raise_for_status()
+            payload = resp.json()
+        if payload.get("status") != 200:
+            raise RuntimeError(f"FinMind error: {payload.get('msg')}")
+        return payload.get("data", [])

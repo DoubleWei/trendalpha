@@ -1,4 +1,10 @@
-import type { FactorsResponse, GlobalScoreResponse } from "@/types/market";
+import type {
+  FactorsResponse,
+  GlobalScoreResponse,
+  HistoryResponse,
+  NewsDigest,
+  QuotesResponse,
+} from "@/types/market";
 
 /**
  * 兩種資料模式：
@@ -40,4 +46,14 @@ export const marketApi = {
       DATA_MODE === "static" ? staticUrl("factors.json") : apiUrl("/market/factors", refresh),
       { signal },
     ),
+  news: (signal?: AbortSignal) =>
+    request<NewsDigest>(DATA_MODE === "static" ? staticUrl("news.json") : apiUrl("/market/news", false), { signal }),
+  quotes: (signal?: AbortSignal) =>
+    request<QuotesResponse>(DATA_MODE === "static" ? staticUrl("quotes.json") : apiUrl("/market/quotes", false), {
+      signal,
+    }),
+  history: (signal?: AbortSignal) =>
+    request<HistoryResponse>(DATA_MODE === "static" ? staticUrl("history.json") : apiUrl("/market/history", false), {
+      signal,
+    }),
 };

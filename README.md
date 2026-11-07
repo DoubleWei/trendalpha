@@ -26,8 +26,11 @@ trendalpha/
 │   │   │   └── plugins/              # ★ 新外掛放這裡，啟動時自動載入
 │   │   │       ├── macro.py          # MacroFetcher
 │   │   │       ├── global_market.py  # GlobalMarketFetcher
+│   │       ├── industry_news.py  # IndustryNewsFetcher（產業新聞情緒）
 │   │   │       ├── commodity.py      # CommodityFetcher
 │   │   │       └── taiwan_flow.py    # TaiwanFlowFetcher
+│   │   ├── news/                 # taxonomy（產業↔個股）、sentiment（中英詞典）、sources
+│   │   ├── services/quotes.py    # 行情跑馬燈
 │   │   ├── engine/
 │   │   │   ├── trend_matrix.py       # TrendMatrixEngine（並行、容錯、TTL 快取、聚合）
 │   │   │   └── summarizer.py         # Summarizer 介面（目前是規則式，之後可換 LLM）
@@ -70,6 +73,15 @@ cd frontend && npm install && npm run dev      # http://localhost:3000（/api/v1
 | 美國科技股 | yfinance | `^SOX`、`^IXIC`、`TSM` + `2330.TW` + `TWD=X`（ADR 溢價，對比 60 日均值） |
 | 原物料市場 | yfinance | `GC=F`、`CL=F`、`^VIX` |
 | 台灣內部籌碼 | FinMind | `TaiwanStockTotalInstitutionalInvestors`、`TaiwanFuturesInstitutionalInvestors`（TX） |
+| 產業新聞 | FinMind + yfinance | `TaiwanStockNews`（台股個股新聞）、`Ticker.news`（美股新聞），依 `app/news/taxonomy.py` 歸入 6 大產業 |
+
+### 產業新聞如何計分
+
+1. 每則標題用中英文財經詞典判讀情緒（`app/news/sentiment.py`）。比對時長詞優先，例如「不如預期」不會被拆成「預期」；也會處理「不」「未」等否定詞。命中的關鍵字會顯示在新聞牆上，方便檢查判讀依據。
+2. 依產業聚合，新聞以 24 小時半衰期衰減。新聞量少時分數往 0 收縮，避免一則標題就把產業推到極端。
+3. 每個產業輸出一個 `EventSignal`，權重依產業重要性和新聞量調整。
+
+要追蹤更多個股或新增產業，只需修改 `app/news/taxonomy.py`。
 
 預設就使用真實數據（`TA_USE_LIVE_DATA=true`）。某個數據源抓取失敗時，該外掛會列入 `failed_sources` 並排除在總分之外，不會用模擬數據頂替。只有在本機開發時設定 `TA_USE_LIVE_DATA=false`，才會使用 Mock。
 
@@ -80,7 +92,7 @@ FinMind 不帶 token 也能使用，但有頻率限制。若要提高額度，�
 `.github/workflows/deploy.yml` 在每次 push 和每 30 分鐘排程時執行：
 
 1. 跑後端測試。
-2. `python -m scripts.export_snapshot` 用 yfinance / FinMind 計算總分，輸出 `global-score.json`、`factors.json`。
+2. `python -m scripts.export_snapshot` 用 yfinance / FinMind 計算總分，輸出 `global-score.json`、`factors.json`、`news.json`、`quotes.json`、`history.json`。總分走勢會先讀回線上的 `history.json`，再接續累積，最多保留 14 天。
 3. `STATIC_EXPORT=1 npm run build` 產生靜態網站，讀取上一步產出的 JSON。
 4. 發佈到 GitHub Pages。如果所有數據源都失敗，就不發佈，網站保留上一版。
 

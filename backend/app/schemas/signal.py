@@ -9,6 +9,7 @@ class FactorCategory(str, Enum):
     US_TECH = "us_tech"      # 美國科技股
     COMMODITY = "commodity"  # 原物料 / 風險情緒
     TW_FLOW = "tw_flow"      # 台灣內部籌碼
+    NEWS = "news"            # 產業新聞情緒
 
 
 class EventSignal(BaseModel):

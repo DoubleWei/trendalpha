@@ -1,6 +1,6 @@
 "use client";
 
-import { Cpu, Flame, Globe2, Landmark, TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
+import { Cpu, Flame, Globe2, Landmark, Newspaper, TrendingDown, TrendingUp, type LucideIcon } from "lucide-react";
 
 import { SpotlightCard } from "@/components/spotlight-card";
 import { TrendProgress } from "@/components/ui/trend-progress";
@@ -12,6 +12,7 @@ const META: Record<FactorCategory, { icon: LucideIcon; en: string }> = {
   us_tech: { icon: Cpu, en: "US Tech" },
   commodity: { icon: Flame, en: "Commodities" },
   tw_flow: { icon: Landmark, en: "TW Capital Flow" },
+  news: { icon: Newspaper, en: "Industry News" },
 };
 
 function PulseCard({ factor, index }: { factor: FactorItem; index: number }) {
@@ -52,7 +53,7 @@ function PulseCard({ factor, index }: { factor: FactorItem; index: number }) {
         </div>
 
         <div className="mt-5 flex items-end justify-between">
-          <span className={cn("font-mono text-4xl font-semibold tracking-tight tabular", toneText[tone])}>
+          <span className={cn("font-mono text-3xl font-semibold tracking-tight tabular", toneText[tone])}>
             {signed(factor.score, 2)}
           </span>
           <span className="mb-1 flex items-center gap-1 text-xs text-muted-foreground">
@@ -109,13 +110,13 @@ export function WorldPulseGrid({ data }: { data: FactorsResponse | null }) {
       <div className="mb-4 flex items-end justify-between">
         <div>
           <h2 className="text-base font-semibold tracking-tight">World Pulse</h2>
-          <p className="text-sm text-muted-foreground">全球四大維度即時得分 · 超過 ±{data?.extreme_threshold ?? 0.8} 觸發警示</p>
+          <p className="text-sm text-muted-foreground">全球五大維度即時得分 · 超過 ±{data?.extreme_threshold ?? 0.8} 觸發警示</p>
         </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {data
           ? data.factors.map((f, i) => <PulseCard key={f.category} factor={f} index={i} />)
-          : Array.from({ length: 4 }, (_, i) => <PulseSkeleton key={i} />)}
+          : Array.from({ length: 5 }, (_, i) => <PulseSkeleton key={i} />)}
       </div>
     </section>
   );
